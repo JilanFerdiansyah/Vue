@@ -1,0 +1,155 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <title>Aplikasi Vue #1</title>
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Raleway">
+		<style>
+		body {
+		  margin : 5%;
+		  font-family: "Raleway", sans-serif;
+		}
+
+		.active {
+			background: salmon;
+			border : 0;
+			padding: 5px;
+		}
+		</style>
+
+
+    
+</head>
+<body>
+
+<div id="app">
+	  <home></home>
+	<header-component nama="Vuejs">	</header-component>
+    <nav>
+        <router-link to="/">Home</router-link>
+        <router-link to="/about">About</router-link>
+        <router-link to="/kelas">Kelas</router-link>
+    </nav> 
+	<main>
+        <!--<kelas v-bind:kelas="kelas" v-on:submitkelas="submitkelas" v-on:hapuskelas="hapuskelas"></kelas>-->
+        <router-view v-bind:kelas="kelas" v-on:submitkelas="submitkelas" v-on:hapuskelas="hapuskelas"></router-view>
+      
+	</main>
+	<footer-component>
+        Copyright 2020
+    </footer-component>
+	
+</div>
+    
+    <!-- aplikasi Vue Hello --> 
+<script src="https://cdn.jsdelivr.net/npm/vue@2.6.12"></script>
+<script src="https://unpkg.com/vue-router/dist/vue-router.js"></script>
+<script>
+
+
+        const Home = {
+            template: '<div>HOMEsss</div>'
+        }
+        const About = {
+            template: '<div>Abouot</div>'
+        }
+
+        const Kelas = {
+             props: ['kelas', 'input'],
+            template : `
+            <div>
+                <h3>Tambah kelas</h3>
+                <p><input type="text" placeholder="nama kelas" v-on:keyup.enter="$emit('submitkelas', $event)"> </p>
+                <hr>
+
+                <h3>Daftar Kelas ({{ kelas.length }})</h3>
+
+                <template v-if="kelas.length >= 1">
+                    <ul>
+                        <li v-for="(item, index) of kelas"> {{ index+1}} - {{item}}
+                        <a href="" v-on:click.prevent="$emit('hapuskelas', index)">hapus</a>
+                        </li>
+
+
+                    </ul>
+                </template>
+
+                <li v-else>Kelas Belum Tersedia</li>
+            </div>
+            `,
+            data: function(){
+                return{
+                
+                }
+            },
+            methods: {
+                  
+            }
+        }
+
+
+        const routes = [
+            { path: '/', component: Home },
+            { path: '/about', component: About },
+            { path: '/kelas', component: Kelas }
+        ]
+
+        const router = new VueRouter({
+            mode: 'history',
+            routes 
+        })
+
+ 		Vue.component('header-component', {
+                props: ['nama'],
+  				template: `<header>
+                <img src="img/kojima.png" alt="">
+                <p>{{'Hello, ' +nama}} </p>
+
+                </header>
+                
+
+                `
+		}) 
+
+                Vue.component('kelas', {
+           
+        })
+
+		Vue.component('footer-component', {
+  				template: `
+                <footer>
+                <slot></slot>
+                </footer>`
+		})
+
+        const vm = new Vue({
+            el: "#app",
+            router,
+            components : {
+                'Home' : Home
+            },
+            data: {
+    			img : 'img/vue.jpg',
+                kelas : ['asu','haha','php'],
+                kelasbaru : ""
+    			
+    		},
+            methods: {
+                hapuskelas : function(index){
+                    this.kelas.splice(index, 1)
+                },
+                submitkelas : function(event){
+                    
+                    const text = event.target.value
+                    this.kelas.unshift (text)
+                }
+            },
+            computed: {
+            	
+            }
+        })
+</script>
+</body>
+</html>
