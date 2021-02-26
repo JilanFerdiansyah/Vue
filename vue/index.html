@@ -1,0 +1,324 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <title>Aplikasi Vue #1</title>
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Raleway">
+        <style>
+        body {
+          margin : 5%;
+          font-family: "Raleway", sans-serif;
+        }
+
+        .active {
+            background: salmon;
+            border : 0;
+            padding: 5px;
+        }
+
+        .error {
+            color: red;
+        }
+
+        .input-group {
+            margin-bottom: 5px;
+        }
+        </style>
+
+
+    
+</head>
+<body>
+
+<div id="app">
+      <home></home>
+    <header-component nama="Vuejs"> </header-component>
+    <nav>
+        <router-link to="/">Home</router-link>
+        <router-link to="/about">About</router-link>
+        <router-link to="/kelas">Kelas</router-link>
+    </nav> 
+    <main>
+        <!--<kelas v-bind:kelas="kelas" v-on:submitkelas="submitkelas" v-on:hapuskelas="hapuskelas"></kelas>-->
+       
+        <router-view v-bind:kelas="kelas" v-on:submitkelas="submitkelas" v-on:hapuskelas="hapuskelas"></router-view>
+    
+    </main>
+    <footer-component>
+        Copyright 2020
+    </footer-component>
+    
+</div>
+
+    <!-- aplikasi Vue Hello --> 
+<script src="https://cdn.jsdelivr.net/npm/vue@2.6.12"></script>
+<script src="https://unpkg.com/vue-router/dist/vue-router.js"></script>
+<script src="https://unpkg.com/uuid@latest/dist/umd/uuidv4.min.js"></script>
+<script src="https://unpkg.com/sweetalert/dist/sweetalert.min.js"></script>
+<!-- The core Firebase JS SDK is always required and must be listed first -->
+<script src="https://www.gstatic.com/firebasejs/8.2.9/firebase-app.js"></script>
+<script src="https://www.gstatic.com/firebasejs/8.2.9/firebase-database.js"></script>
+
+<!-- TODO: Add SDKs for Firebase products that you want to use
+     https://firebase.google.com/docs/web/setup#available-libraries -->
+
+<script>
+  // Your web app's Firebase configuration
+  var firebaseConfig = {
+    apiKey: "AIzaSyCVaBZ7ApvwNNbRxzCQ6i5at369xapbnA4",
+    authDomain: "vuejs-cd364.firebaseapp.com",
+    projectId: "vuejs-cd364",
+    storageBucket: "vuejs-cd364.appspot.com",
+    messagingSenderId: "1037373221835",
+    appId: "1:1037373221835:web:e9c2b17f020ff3cc3e644e"
+  };
+  // Initialize Firebase
+  firebase.initializeApp(firebaseConfig);
+  const database = firebase.database()
+
+  const kelasRef =database.ref('kelas')
+</script> 
+<script>
+
+
+        const Home = {
+            template: '<div>HOMEsss</div>'
+        }
+        const About = {
+            template: '<div>Abouot</div>'
+        }
+        const NotFound = {
+            template: '<div>halmaan g ada</div>'
+        }
+
+        const detailKelas = {
+            template : `
+                <template v-if="detailkelas">
+                    <img :src="'img/'+detailkelas.gambar" width="200">
+                    <h3> {{ detailkelas.judul }} </h3>
+                    <p>{{ detailkelas.deskripsi }}</p>
+                    <router-link to="/kelas">kembali</router-link> 
+                </template>
+                <p v-else>kelas tidak ada</p>
+            `,
+           data(){
+            return{
+                detailkelas: {}
+            }
+           },
+           created(){
+            this.filterkelas()
+           },
+           methods: {
+            filterkelas(){
+                
+                let id = this.$route.params.idkelas
+                let kelasDetailRef = database.ref('kelas/' +id)
+                kelasDetailRef.on('value', (item) => {
+                    this.detailkelas = item.val()    
+                })
+            }
+           }
+        
+        }
+
+        const Kelas = {
+             props: ['kelas', 'input'],
+            template : `
+            <div>
+                <h3>Tambah kelas</h3>
+                 <form v-on:submit.prevent="submitkelas">
+                    <div class="input-group"><input type="text" v-model="kelas.judul" placeholder="nama kelas" >
+                    <div class="error" v-if="error.judul ">{{ error.judul }}</div>
+                    </div>
+
+                    <div class="input-group">
+                        <label for="">deskripsi</label><br>
+                        <textarea name="" id="" cols="30" rows="10" v-model="kelas.deskripsi"></textarea>
+                        <div class="error" v-if="error.judul ">{{ error.deskripsi }}</div>
+                    </div>
+
+                    <div class="input-group">
+                        <img :src="previewimg" v-if="previewimg" width="200"><br> 
+                        <label for="" v-on:change="upload">masukan gambar</labe><br>
+                        <input type="file" >
+                    </div>
+
+                    <button type="submit">submit</button>
+                </form>
+                <h3>Daftar Kelas ({{ kelas.length }})</h3>
+
+                <template v-if="kelas.length >= 1">
+                    <ul>
+                        <li v-for="(item, index) of kelas"> 
+                        <img :src="'img/'+item.gambar" width="200">
+                        <p>{{item.judul}}
+                        <a href="" v-on:click.prevent="$emit('hapuskelas', item.id)">hapus</a>
+                        <router-link :to="'kelas/' + item.id">lihat kelas</router-link>
+                        </p>
+                        </li>
+
+
+                    </ul>
+                </template>
+
+                <li v-else>Kelas Belum Tersedia</li>
+            </div>
+            `,
+            data: function(){
+                return{
+                    kelas :{
+                        judul: '',
+                        deskripsi: '',
+                        gambar: ''
+                    },
+                    previewimg: "",
+                    error: {
+                        judul: '',
+                        deskripsi: ''
+                        
+                    }
+                }
+            },
+            methods: {
+                submitkelas: function(){
+                    this.error.judul =""
+                    this.error.deskripsi=" "
+                    if (this.kelas.judul == '') {
+                        this.error.judul = 'judul is required'
+                    
+                    }
+                    if (this.kelas.deskripsi == '') {
+                        this.error.deskripsi = 'deskripsi is required'
+                        
+                    }
+                    
+                    if (this.kelas.judul && this.kelas.deskripsi) {
+                        const data = {
+                        id: uuidv4(),
+                        judul: this.kelas.judul,
+                        deskripsi: this.kelas.deskripsi,
+                        gambar: this.kelas.gambar 
+                        }
+                        this.$emit('submitkelas', data)
+
+                        this.kelas.judul =""
+                        this.kelas.deskripsi =""
+                    }
+                    /**/
+                },
+                upload: function(event){
+                    
+                    const namagambar = event.target.files[0].name
+                    this.kelas.gambar = namagambar
+                    this.previewimg = URL.createObjectURL(event.target.files[0])
+                }
+            }
+        }
+
+
+        const routes = [
+            { path: '/', component: Home },
+            { path: '/about', component: About },
+            { path: '/kelas', component: Kelas },
+            { path: '/kelas/:id',
+                component: detailKelas
+            },
+            { path: '*', component: NotFound}
+        ]
+
+        const router = new VueRouter({
+            routes 
+        })
+
+
+        Vue.component('header-component', {
+                props: ['nama'],
+                template: `<header>
+                <img src="img/kojima.png" alt="">
+                <p>{{'Hello, ' +nama}} </p>
+
+                </header>
+                
+
+                `
+        }) 
+
+                Vue.component('kelas', {
+           
+        })
+
+        Vue.component('footer-component', {
+                template: `
+                <footer>
+                <slot></slot>
+                </footer>`
+        })
+
+        const vm = new Vue({
+            el: "#app",
+            router,
+            components : {
+                'Home' : Home
+            },
+            data: {
+                
+               kelas: []
+                
+            },
+            created(){
+                kelasRef.on('value', this.resultData, this.errorData )
+            },
+            methods: {
+                resultData(items){
+
+                    this.kelas = []
+                   items.forEach((item) => {
+                    let data = {
+                        id: item.key,
+                        judul: item.val().judul,
+                        deskripsi: item.val().deskripsi,
+                        gambar: item.val().gambar
+                    }
+
+                    this.kelas.push(data)
+                   }) 
+                },
+                errorData(error){
+                    console.log(error)
+                }, 
+                hapuskelas : function(id){
+                    database.ref('/kelas/' +id).remove()
+
+                    swal({
+                        text: 'Data berhasil di hapus',
+                        icon: 'warning'
+
+                    })     
+                },
+                submitkelas : function(data){
+                    
+
+                    kelasRef.push({
+                        judul: data.judul,
+                        deskripsi: data.deskripsi ,
+                        gambar: data.gambar
+                    })
+
+                    swal({
+                        title: data.judul,
+                        text: 'Data berhasil di simpan',
+                        icon: 'success'
+
+                    })
+                }
+            },
+            computed: {
+                
+            }
+        })
+</script>
+</body>
+</html>
